@@ -8,6 +8,13 @@ export default async () => {
   bms.startScanning();
   bms.startReadingBatteryState(5000);
   bms.messageEmitter.on("batteryState", (state) =>
-    client.publish("bolife/ultimatron", JSON.stringify({ ...state }))
+    client.publish(
+      "bolife/ultimatron",
+      JSON.stringify({
+        ...state,
+        power: state.voltage * state.current,
+        charged_percentage: Math.round((state.charge / state.full) * 100),
+      })
+    )
   );
 };
