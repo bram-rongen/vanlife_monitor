@@ -1,10 +1,13 @@
-export const delayMillis = (delayMs: number): Promise<void> => new Promise(resolve => setTimeout(resolve, delayMs));
+import UltimatronBMS from "./lib/UltimatronBMS";
+import connectMqtt from "./lib/mqtt";
+import settings from "./settings";
 
-export const greet = (name: string): string => `Hello ${name}`
-
-export const foo = async (): Promise<boolean> => {
-  console.log(greet('World'))
-  await delayMillis(1000)
-  console.log('done')
-  return true
-}
+export default async () => {
+  const bms = new UltimatronBMS(settings.ultimatron);
+  const client = await connectMqtt(settings.mqtt.socket, settings.mqtt.mqtt);
+  bms.startScanning();
+  bms.startReadingBatteryState(5000);
+  bms.messageEmitter.on("batteryState", (state) =>
+    client.publish("bolife/ultimatron", JSON.stringify({ ...state }))
+  );
+};

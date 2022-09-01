@@ -7,8 +7,6 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       fail-fast: false
-      matrix:
-        nodejs: [12, 14]
 
     steps:
     - uses: actions/checkout@v2
@@ -16,10 +14,10 @@ jobs:
     # https://github.com/actions/setup-node
     - uses: actions/setup-node@v2-beta
       with:
-        node-version: ${{ matrix.nodejs }}
+        node-version: 16
 
-    - run: yarn install
-    - run: yarn add -D esbuild
-    - run: yarn test
-    - run: yarn lint
-    - run: yarn build-all
+    - run: npm install
+    - run: npm add -D esbuild
+    - run: npm test
+    - run: npm lint
+    - run: npm build-all

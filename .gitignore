@@ -5,6 +5,8 @@
 /docs/
 .idea/*
 
+src/settings.ts
+
 .DS_Store
 coverage
 *.log
