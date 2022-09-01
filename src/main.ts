@@ -7,14 +7,18 @@ export default async () => {
   const client = await connectMqtt(settings.mqtt.socket, settings.mqtt.mqtt);
   bms.startScanning();
   bms.startReadingBatteryState(5000);
+  bms.startReadingCellState(60000);
   bms.messageEmitter.on("batteryState", (state) =>
     client.publish(
-      "bolife/ultimatron",
+      "bolife/ultimatron/batterystate",
       JSON.stringify({
         ...state,
         power: state.voltage * state.current,
         charged_percentage: Math.round((state.charge / state.full) * 100),
       })
     )
+  );
+  bms.messageEmitter.on("cellState", (state) =>
+    client.publish("bolife/ultimatron/cellstate", JSON.stringify(state))
   );
 };
