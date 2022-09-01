@@ -9,13 +9,17 @@ const getSocket = async (socketSettings: any) => {
   return connInfo.socket;
 };
 
-export default async (socketSettings: any, mqttSettings: any) => {
+export default async (
+  socketSettings: any,
+  mqttSettings: any,
+  topicPrefix: string
+) => {
   let socket = await getSocket(socketSettings);
 
   const mqttClient = new mqtt.Client(() => socket, {
     ...mqttSettings,
     will: {
-      topic: "bolife/online",
+      topic: `${topicPrefix}/online`,
       payload: "false",
       qos: 1,
       retain: true,
@@ -24,7 +28,7 @@ export default async (socketSettings: any, mqttSettings: any) => {
 
   mqttClient.on("connect", function () {
     console.log("mqtt connection successful");
-    mqttClient.publish("bolife/online", "true");
+    mqttClient.publish(`${topicPrefix}/online`, "true");
   });
 
   mqttClient.on("reconnect", async function () {

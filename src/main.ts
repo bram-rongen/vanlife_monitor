@@ -4,13 +4,19 @@ import settings from "./settings";
 
 export default async () => {
   const bms = new UltimatronBMS(settings.ultimatron);
-  const client = await connectMqtt(settings.mqtt.socket, settings.mqtt.mqtt);
+  const client = await connectMqtt(
+    settings.mqtt.socket,
+    settings.mqtt.mqtt,
+    settings.mqtt.topic.prefix
+  );
+
   bms.startScanning();
   bms.startReadingBatteryState(5000);
   bms.startReadingCellState(60000);
+
   bms.messageEmitter.on("batteryState", (state) =>
     client.publish(
-      "bolife/ultimatron/batterystate",
+      `${settings.mqtt.topic.prefix}/ultimatron/batterystate`,
       JSON.stringify({
         ...state,
         power: state.voltage * state.current,
@@ -18,7 +24,11 @@ export default async () => {
       })
     )
   );
+
   bms.messageEmitter.on("cellState", (state) =>
-    client.publish("bolife/ultimatron/cellstate", JSON.stringify(state))
+    client.publish(
+      `${settings.mqtt.topic.prefix}/ultimatron/cellstate`,
+      JSON.stringify(state)
+    )
   );
 };
