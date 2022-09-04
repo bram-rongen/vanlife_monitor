@@ -46,6 +46,7 @@
   "dependencies": {
     "@abandonware/noble": "^1.9.2-15",
     "mqtt": "^4.3.7",
+    "pino": "^8.4.2",
     "socks": "^2.7.0"
   }
 }

@@ -2,6 +2,8 @@ import noble from "@abandonware/noble";
 import EventEmitter from "events";
 import TypedEmitter from "typed-emitter";
 
+import logger from "./logger";
+
 type BatteryStateData = {
   voltage: number;
   current: number;
@@ -88,18 +90,18 @@ class UltimatronBMS {
     });
 
     noble.on("scanStart", () => {
-      console.log("Started scanning");
+      logger.info("Started scanning");
     });
 
     noble.on("discover", async (peripheral) => {
       if (peripheral.advertisement.localName !== localName) return;
 
-      console.log(`Device ${localName} discovered`);
+      logger.info(`Device ${localName} discovered`);
       noble.stopScanningAsync();
 
       await peripheral.connectAsync();
 
-      console.log("Connected to device");
+      logger.info("Connected to device");
 
       const { characteristics } =
         await peripheral.discoverAllServicesAndCharacteristicsAsync();
@@ -120,28 +122,32 @@ class UltimatronBMS {
         if (buffer.length > 4) {
           if (buffer[0] === 221 && buffer[buffer.length - 1] === 119) {
             const command = buffer[1];
-            switch (command) {
-              case 3:
-                this.messageEmitter.emit(
-                  "batteryState",
-                  decodeBatteryStateData(buffer)
-                );
-                break;
-              case 4:
-                this.messageEmitter.emit(
-                  "cellState",
-                  decodeCellStateData(buffer)
-                );
-                break;
-              case 5:
-                this.messageEmitter.emit(
-                  "batteryInfo",
-                  decodeBatteryInfoData(buffer)
-                );
-                break;
-              default:
-                console.log(`no decoder for command ${command}`);
-                console.log(buffer);
+            try {
+              switch (command) {
+                case 3:
+                  this.messageEmitter.emit(
+                    "batteryState",
+                    decodeBatteryStateData(buffer)
+                  );
+                  break;
+                case 4:
+                  this.messageEmitter.emit(
+                    "cellState",
+                    decodeCellStateData(buffer)
+                  );
+                  break;
+                case 5:
+                  this.messageEmitter.emit(
+                    "batteryInfo",
+                    decodeBatteryInfoData(buffer)
+                  );
+                  break;
+                default:
+                  logger.warn(`no decoder for command ${command}`);
+                  logger.debug(buffer);
+              }
+            } catch (error) {
+              logger.error("unable to decode buffer", buffer);
             }
 
             buffer = Buffer.from([]);

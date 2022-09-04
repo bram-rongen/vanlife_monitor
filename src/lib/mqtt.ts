@@ -1,5 +1,6 @@
 import * as mqtt from "mqtt";
 import { SocksClient } from "socks";
+import logger from "./logger";
 
 const getSocket = async (socketSettings: any) => {
   const connInfo = await SocksClient.createConnection({
@@ -27,16 +28,16 @@ export default async (
   });
 
   mqttClient.on("connect", function () {
-    console.log("mqtt connection successful");
+    logger.info("mqtt connection successful");
     mqttClient.publish(`${topicPrefix}/online`, "true");
   });
 
   mqttClient.on("reconnect", async function () {
-    console.log("reconnect");
+    logger.info("reconnect");
     try {
       socket = await getSocket(socketSettings);
     } catch (error) {
-      console.log("Unable to reconnect");
+      logger.info("Unable to reconnect");
     }
   });
 
